@@ -32,6 +32,8 @@ class ReportBuilder:
         top_n: int = 5,
         now: datetime | None = None,
     ) -> None:
+        if top_n < 1:
+            raise ValueError("top_n deve ser maior ou igual a 1")
         self._reservation_repository = reservation_repository
         self._rate_repository = rate_repository
         self._top_n = top_n
@@ -88,7 +90,7 @@ class ReportBuilder:
             for month, data in sorted(monthly.items())
         ]
 
-        ranked_hotels = sorted(hotels.items(), key=lambda item: (item[1]["amount"], item[0]))
+        ranked_hotels = sorted(hotels.items(), key=lambda item: (-item[1]["amount"], item[0]))
         top_hotels = [
             {
                 "hotel_id": hotel_id,
@@ -99,7 +101,12 @@ class ReportBuilder:
             for hotel_id, data in ranked_hotels[: self._top_n]
         ]
 
-        now = self._now or datetime.now(FIXED_OFFSET)
+        if self._now is None:
+            now = datetime.now(FIXED_OFFSET)
+        elif self._now.tzinfo is None:
+            now = self._now.replace(tzinfo=FIXED_OFFSET)
+        else:
+            now = self._now.astimezone(FIXED_OFFSET)
 
         return {
             "report_version": "1.0",
