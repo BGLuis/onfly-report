@@ -1,0 +1,2 @@
+# O CLI usa apenas a biblioteca padrão do Python 3.11.
+# Não há dependências de runtime para instalar.

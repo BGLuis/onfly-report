@@ -1,0 +1,18 @@
+[project]
+name = "onfly-report"
+version = "1.0.0"
+description = "Consolidador de reservas de hotel da Onfly"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra"
