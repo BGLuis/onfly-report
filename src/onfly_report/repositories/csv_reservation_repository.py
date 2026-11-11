@@ -35,7 +35,7 @@ class CsvReservationRepository:
 
     def read(self) -> list[RawRow]:
         try:
-            with self._path.open("r", encoding="utf-8", newline="") as handle:
+            with self._path.open("r", encoding="utf-8-sig", newline="") as handle:
                 reader = csv.DictReader(handle)
                 missing = [column for column in REQUIRED_COLUMNS if column not in (reader.fieldnames or [])]
                 if missing:
@@ -43,11 +43,13 @@ class CsvReservationRepository:
 
                 rows: list[RawRow] = []
                 for values in reader:
+                    if None in values or any(values.get(col) is None for col in REQUIRED_COLUMNS):
+                        raise InputFileError(
+                            f"linha {reader.line_num} com número incorreto de colunas em {self._path}"
+                        )
                     rows.append(RawRow(line_number=reader.line_num, values=values))
-                    if len(rows) == 200:
-                        break
                 return rows
         except FileNotFoundError as err:
             raise InputFileError(f"arquivo de reservas não encontrado: {self._path}") from err
-        except (OSError, csv.Error) as err:
+        except (OSError, UnicodeDecodeError, csv.Error) as err:
             raise InputFileError(f"falha ao ler {self._path}: {err}") from err
